@@ -64,9 +64,9 @@ button,select{border-radius:10px}
 #nav button{flex:1;border:0;background:transparent;border-radius:0;padding:8px 2px 6px;font-size:.72rem;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:2px}
 #nav button i{font-style:normal;font-size:1.3rem}
 #nav button.on{color:var(--acc);font-weight:600}
-#set,#aip,#alp{display:none;position:fixed;inset:0;bottom:calc(60px + env(safe-area-inset-bottom,0px));max-height:none;border:0;box-shadow:none;background:var(--bg);z-index:35;overflow:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 14px 16px}
-#set.open,#aip.open,#alp.open{display:block}
-#set .r{background:var(--cell);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+#set,#aip,#alp,#shp{display:none;position:fixed;inset:0;bottom:calc(60px + env(safe-area-inset-bottom,0px));max-height:none;border:0;box-shadow:none;background:var(--bg);z-index:35;overflow:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 14px 16px}
+#set.open,#aip.open,#alp.open,#shp.open{display:block}
+#set .r,#shp .r{background:var(--cell);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
 #sheet{z-index:45;border-radius:18px 18px 0 0}
 #alp h2{margin:0 0 10px;font-size:1.1rem}
 .ali{display:flex;align-items:center;gap:10px;background:var(--cell);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
@@ -107,7 +107,13 @@ button,select{border-radius:10px}
 <div id="ring"><div style="font-size:3rem">⏰</div><h2 id="rT"></h2><div id="rM"></div><button type="button" class="p" id="rD">إيقاف</button><button type="button" id="rS">غفوة</button></div>
 <div id="toast"></div>
 <div id="alp"><h2>⏰ المنبهات والتذكيرات</h2><div class="r"><button type="button" class="p" id="alN">+ منبه جديد</button></div><div id="alL"></div></div>
-<nav id="nav"><button id="navS" type="button" class="on"><i>🗓️</i>الجدول</button><button id="navA" type="button"><i>⏰</i>المنبهات</button><button id="aiB" type="button" style="display:none"><i>🤖</i>المساعد</button><button id="setb" type="button"><i>⚙️</i>الإعدادات</button></nav>
+<div id="shp"><h2 style="margin:0 0 10px;font-size:1.1rem">📤 مشاركة وتصدير</h2>
+<div class="r"><button type="button" class="p" id="xImg">🖼️ صورة PNG</button><button type="button" class="p" id="xPdf">📄 PDF</button></div>
+<div class="r"><button type="button" id="xIcs">📅 ملف تقويم ICS</button><button type="button" id="xCsv">📊 Excel CSV</button></div>
+<div class="r"><button type="button" id="xTxt">💬 نص (واتساب)</button><button type="button" id="xCp">نسخ النص</button></div>
+<div class="r"><button type="button" id="xBk">💾 نسخة احتياطية</button><button type="button" id="xRs">♻️ استرجاع</button><input type="file" id="xFl" accept=".json,application/json" style="display:none"></div>
+<h2 style="margin:14px 0 10px;font-size:1.1rem">📈 ملخص الأسبوع</h2><div id="stL"></div></div>
+<nav id="nav"><button id="navS" type="button" class="on"><i>🗓️</i>الجدول</button><button id="navA" type="button"><i>⏰</i>المنبهات</button><button id="navH" type="button"><i>📤</i>مشاركة</button><button id="aiB" type="button" style="display:none"><i>🤖</i>المساعد</button><button id="setb" type="button"><i>⚙️</i>الإعدادات</button></nav>
 <script>
 var S={sound:"bell",vol:.8,vib:true,notif:true,defR:10,snooze:5},SM=null,actx=null,fired={},ringT=null,ringEv=null,rm,alc;
 try{Object.assign(S,JSON.parse(localStorage.getItem("wp-set")||"{}"))}catch(e){}
@@ -142,7 +148,7 @@ else if(a.op==="edit"){evs.forEach(function(e){if(e.n===n){if(a.s!=null)e.s=cl(a
 if(ch){save();render()}w.textContent=(r&&r.reply)||"تمام"}).catch(function(){w.textContent="معرفتش أرد دلوقتي، جرّب تاني"})}
 var view="week",selDay=null;
 function setView(v){view=v;if(v==="day"&&selDay==null)selDay=todayIdx;$("vW").classList.toggle("on",v==="week");$("vD").classList.toggle("on",v==="day");$("dbar").style.display=v==="day"?"flex":"none";$("dbar").querySelectorAll("button").forEach(function(b){b.classList.toggle("on",+b.dataset.i===selDay)});render()}
-function go(t){["set","aip","alp"].forEach(function(i){$(i).classList.remove("open")});var m={a:"alp",i:"aip",g:"set"};if(m[t])$(m[t]).classList.add("open");if(t==="a")renderAl();var n={s:"navS",a:"navA",i:"aiB",g:"setb"};Object.keys(n).forEach(function(k){$(n[k]).classList.toggle("on",k===t)})}
+function go(t){["set","aip","alp","shp"].forEach(function(i){$(i).classList.remove("open")});var m={a:"alp",i:"aip",g:"set",h:"shp"};if(m[t])$(m[t]).classList.add("open");if(t==="a")renderAl();if(t==="h")renderSt();var n={s:"navS",a:"navA",h:"navH",i:"aiB",g:"setb"};Object.keys(n).forEach(function(k){$(n[k]).classList.toggle("on",k===t)})}
 function renderAl(){var L=$("alL");L.innerHTML="";var a=evs.slice().sort(function(x,y){return x.s-y.s});if(!a.length){L.innerHTML="<p class='hint' style='padding:0'>مفيش مواعيد لسه.</p>";return}
 a.forEach(function(ev){var d=document.createElement("div");d.className="ali";d.innerHTML="<div class='at'><b></b><small></small></div><label><input type='checkbox' class='r1'>تذكير</label><label><input type='checkbox' class='r2'>رنين</label>";
 d.querySelector("b").textContent=ev.n;d.querySelector("small").textContent=tf(ev.s)+" · "+(ev.days.length===7?"كل يوم":ev.days.map(function(x){return days[x]}).join("، "))+(ev.r>=0?" · "+rl(ev.r):"");
@@ -150,6 +156,63 @@ var c1=d.querySelector(".r1"),c2=d.querySelector(".r2");c1.checked=ev.r!=null&&e
 c1.onchange=function(){ev.r=c1.checked?S.defR:-1;if(!c1.checked)ev.al=false;save();renderAl()};
 c2.onchange=function(){ev.al=c2.checked;if(ev.al&&(ev.r==null||ev.r<0))ev.r=0;save();renderAl()};
 d.querySelector(".at").onclick=function(){openEd(ev)};L.appendChild(d)})}
+var SH=C&&C.Plugins&&C.Plugins.Share,FS=C&&C.Plugins&&C.Plugins.Filesystem;
+function b64(b){return new Promise(function(r){var f=new FileReader();f.onload=function(){r(f.result.split(",")[1])};f.readAsDataURL(b)})}
+function deliver(name,blob,title){
+if(LN&&SH&&FS){b64(blob).then(function(d){return FS.writeFile({path:name,data:d,directory:"CACHE"})}).then(function(r){return SH.share({title:title,url:r.uri,dialogTitle:title})}).catch(function(){toast("المشاركة فشلت، جرّب تاني")});return}
+try{var f=new File([blob],name,{type:blob.type});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:title}).catch(function(){});return}}catch(e){}
+var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();toast("اتحمّل الملف")}
+function cpText(t){try{navigator.clipboard.writeText(t).then(function(){toast("اتنسخ")},function(){toast("مقدرتش أنسخ")})}catch(e){toast("مقدرتش أنسخ")}}
+function shareText(t){if(LN&&SH){SH.share({text:t,dialogTitle:"جدولي"}).catch(function(){});return}if(navigator.share){navigator.share({text:t}).catch(function(){});return}cpText(t)}
+function ovl(ev){return evs.some(function(e){return e!==ev&&e.days.some(function(d){return ev.days.indexOf(d)>-1})&&ev.s<e.s+e.d&&e.s<ev.s+ev.d})}
+function p2(n){return("0"+n).slice(-2)}
+function fl(d){return d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+"T"+p2(d.getHours())+p2(d.getMinutes())+"00"}
+function ie(s){return String(s).replace(/([\\;,])/g,"\\$1")}
+function ics(){var L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Jadwali//AR","CALSCALE:GREGORIAN"],BY=["SA","SU","MO","TU","WE","TH","FR"],z=new Date().toISOString().replace(/[-:]|\.\d+/g,"");
+evs.forEach(function(ev){ev.days.forEach(function(d){var o=0;while(dIdx(at(o,0))!==d)o++;var st=at(o,ev.s),en=new Date(st.getTime()+ev.d*3600000);
+L.push("BEGIN:VEVENT","UID:"+ev.id+"-"+d+"@jadwali","DTSTAMP:"+z,"DTSTART:"+fl(st),"DTEND:"+fl(en),"RRULE:FREQ=WEEKLY;BYDAY="+BY[d],"SUMMARY:"+ie(ev.n));
+if(ev.r!=null&&ev.r>=0)L.push("BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+ie(ev.n),"TRIGGER:-PT"+ev.r+"M","END:VALARM");L.push("END:VEVENT")})});
+L.push("END:VCALENDAR");return L.join("\r\n")}
+function byDay(i){return evs.filter(function(e){return e.days.indexOf(i)>-1}).sort(function(a,b){return a.s-b.s})}
+function csv(){var r=[["اليوم","من","إلى","النشاط","التذكير"]];days.forEach(function(d,i){byDay(i).forEach(function(e){r.push([d,tf(e.s),tf((e.s+e.d)%24),e.n,e.r>=0?rl(e.r):""])})});
+return"\ufeff"+r.map(function(x){return x.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"'}).join(",")}).join("\r\n")}
+function txt(){var o="📅 جدولي الأسبوعي\n";days.forEach(function(d,i){var a=byDay(i);o+="\n*"+d+"*\n";if(!a.length)o+="—\n";a.forEach(function(e){o+=tf(e.s)+" – "+tf((e.s+e.d)%24)+"  "+e.n+"\n"})});return o}
+function drawImg(){var W=1754,H=1240,cv=document.createElement("canvas");cv.width=W;cv.height=H;var g=cv.getContext("2d"),F="Tahoma,Arial,sans-serif";
+g.fillStyle="#fff";g.fillRect(0,0,W,H);g.direction="rtl";g.textBaseline="middle";
+var R=W-40,tw=90,cw=(W-80-tw)/7,top=130,rh=(H-top-30)/48,x0=R-tw;
+g.fillStyle="#17212b";g.font="bold 42px "+F;g.textAlign="right";g.fillText("جدولي الأسبوعي",R,55);
+g.textAlign="center";
+for(var i=0;i<7;i++){g.fillStyle="#e4ecf0";g.fillRect(x0-(i+1)*cw+1,top-44,cw-2,40);g.fillStyle="#17212b";g.font="bold 22px "+F;g.fillText(days[i],x0-(i+.5)*cw,top-24)}
+g.lineWidth=1;
+for(var h=0;h<=24;h++){var y=top+h*2*rh;g.strokeStyle="#d5dde3";g.beginPath();g.moveTo(x0-7*cw,y);g.lineTo(R,y);g.stroke();if(h<24){g.fillStyle="#667085";g.font="18px "+F;g.fillText((h%12||12)+(h<12?" ص":" م"),R-tw/2,y+14)}}
+for(var j=0;j<=7;j++){g.beginPath();g.moveTo(x0-j*cw,top);g.lineTo(x0-j*cw,top+48*rh);g.stroke()}
+function wr(t,mw){var w=t.split(" "),l=[],c="";w.forEach(function(k){var tt=c?c+" "+k:k;if(g.measureText(tt).width>mw&&c){l.push(c);c=k}else c=tt});l.push(c);return l.slice(0,3)}
+function box(d,s,e,n){var hu=hue(n),bx=x0-(d+1)*cw+4,by=top+s*2*rh+1,bw=cw-8,bh=(e-s)*2*rh-2;
+g.fillStyle="hsla("+hu+",60%,60%,.35)";g.fillRect(bx,by,bw,bh);g.fillStyle="hsl("+hu+",60%,42%)";g.fillRect(bx+bw-5,by,5,bh);
+g.fillStyle="#17212b";g.font="17px "+F;g.textAlign="center";var ls=wr(n,bw-20),lh=20,my=by+bh/2-(ls.length-1)*lh/2;ls.forEach(function(t,k){g.fillText(t,bx+(bw-5)/2,my+k*lh)})}
+evs.forEach(function(ev){ev.days.forEach(function(d){box(d,ev.s,Math.min(24,ev.s+ev.d),ev.n);if(ev.s+ev.d>24)box((d+1)%7,0,ev.s+ev.d-24,ev.n)})});
+return cv}
+function mkPdf(jpg,W,H){var en=new TextEncoder(),parts=[],off=[],pos=0;function add(x){var u=typeof x==="string"?en.encode(x):x;parts.push(u);pos+=u.length}
+function ob(n,b){off[n]=pos;add(n+" 0 obj\n"+b+"\nendobj\n")}
+add("%PDF-1.4\n");ob(1,"<</Type/Catalog/Pages 2 0 R>>");ob(2,"<</Type/Pages/Kids[3 0 R]/Count 1>>");
+ob(3,"<</Type/Page/Parent 2 0 R/MediaBox[0 0 842 595]/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>");
+off[4]=pos;add("4 0 obj\n<</Type/XObject/Subtype/Image/Width "+W+"/Height "+H+"/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length "+jpg.length+">>\nstream\n");add(jpg);add("\nendstream\nendobj\n");
+var c="q 842 0 0 595 0 0 cm /Im0 Do Q";ob(5,"<</Length "+c.length+">>\nstream\n"+c+"\nendstream");
+var xr=pos;add("xref\n0 6\n0000000000 65535 f \n");for(var i=1;i<=5;i++)add(("0000000000"+off[i]).slice(-10)+" 00000 n \n");
+add("trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n"+xr+"\n%%EOF");return new Blob(parts,{type:"application/pdf"})}
+function renderSt(){var m={};evs.forEach(function(e){m[e.n]=(m[e.n]||0)+e.d*e.days.length});var k=Object.keys(m).sort(function(a,b){return m[b]-m[a]}),mx=m[k[0]]||1,L=$("stL");L.innerHTML="";
+k.forEach(function(n){var d=document.createElement("div");d.className="ali";d.innerHTML="<div class='at'><b></b><small></small><div class='bb' style='height:8px;border-radius:4px;background:var(--acc);margin-top:6px'></div></div>";
+d.querySelector("b").textContent=n;d.querySelector("small").textContent=(Math.round(m[n]*10)/10)+" ساعة في الأسبوع";d.querySelector(".bb").style.width=Math.max(4,m[n]/mx*100)+"%";L.appendChild(d)})}
+function shInit(){
+$("xImg").onclick=function(){drawImg().toBlob(function(b){deliver("jadwali.png",b,"جدولي")},"image/png")};
+$("xPdf").onclick=function(){var c=drawImg(),u=atob(c.toDataURL("image/jpeg",.92).split(",")[1]),a=new Uint8Array(u.length);for(var i=0;i<u.length;i++)a[i]=u.charCodeAt(i);deliver("jadwali.pdf",mkPdf(a,c.width,c.height),"جدولي")};
+$("xIcs").onclick=function(){deliver("jadwali.ics",new Blob([ics()],{type:"text/calendar"}),"جدولي")};
+$("xCsv").onclick=function(){deliver("jadwali.csv",new Blob([csv()],{type:"text/csv"}),"جدولي")};
+$("xTxt").onclick=function(){shareText(txt())};
+$("xCp").onclick=function(){cpText(txt())};
+$("xBk").onclick=function(){deliver("jadwali-backup.json",new Blob([JSON.stringify({v:1,evs:evs,S:S})],{type:"application/json"}),"نسخة احتياطية")};
+$("xRs").onclick=function(){$("xFl").click()};
+$("xFl").onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result);if(!o||!Array.isArray(o.evs))throw 0;evs=o.evs;evs.forEach(function(e){if(!e.id)e.id=uid()});if(o.S){Object.assign(S,o.S);saveS()}save();render();toast("اتسترجع الجدول")}catch(e){toast("الملف مش نسخة احتياطية صالحة")}};r.readAsText(f);this.value=""}}
 function mkChans(){Object.keys(TONES).forEach(function(k){LN.createChannel({id:"al_"+k,name:"منبه - "+TONES[k][0],importance:5,visibility:1,vibration:true,sound:k+".wav"});LN.createChannel({id:"rm_"+k,name:"تذكير - "+TONES[k][0],importance:4,visibility:1,vibration:true,sound:k+".wav"})})}
 function sync(){if(!LN)return;clearTimeout(syT);syT=setTimeout(function(){
 LN.getPending().then(function(p){return p.notifications.length?LN.cancel({notifications:p.notifications}):0}).then(function(){
@@ -161,13 +224,13 @@ LN.checkPermissions().then(function(r){$("sNs").textContent=r.display==="granted
 $("sNp").onclick=function(){LN.requestPermissions().then(function(r){$("sNs").textContent=r.display==="granted"?"مفعّلة":"مرفوضة"});if(LN.checkExactNotificationSetting)LN.checkExactNotificationSetting().then(function(x){if(x.exact_alarm!=="granted")LN.changeExactNotificationSetting()}).catch(function(){})};
 $("sNtst").onclick=function(){LN.schedule({notifications:[{id:999999,title:"إشعار تجريبي",body:"كده الإشعارات شغالة",channelId:"al_"+S.sound,schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]});toast("هيجيلك إشعار بعد 5 ثواني، اقفل الشاشة لو عايز تجرّب")};
 sync()}
-function init2(){var m={navS:"s",navA:"a",aiB:"i",setb:"g"};Object.keys(m).forEach(function(k){$(k).onclick=function(){go(m[k])}});
+function init2(){var m={navS:"s",navA:"a",navH:"h",aiB:"i",setb:"g"};Object.keys(m).forEach(function(k){$(k).onclick=function(){go(m[k])}});
 $("sClose").onclick=function(){go("s")};$("aiX").onclick=function(){go("s")};
 $("vW").onclick=function(){setView("week")};$("vD").onclick=function(){setView("day")};
 $("dbar").innerHTML=days.map(function(d,i){return"<button type='button' data-i='"+i+"'>"+d+"</button>"}).join("");
 $("dbar").onclick=function(e){var i=e.target.dataset&&e.target.dataset.i;if(i!=null){selDay=+i;setView("day")}};
 $("alN").onclick=function(){var n=new Date(),h=Math.min(23,Math.ceil((n.getHours()+n.getMinutes()/60)*2)/2);openEd({id:uid(),n:"منبه",s:h,d:.5,days:[todayIdx],r:0,al:true})};
-$("sNtst").onclick=function(){var ok=notify("إشعار تجريبي","لو شايف الرسالة دي في شريط الإشعارات يبقى كله تمام");toast(ok?"اتبعت إشعار، بص على شريط الإشعارات":"الإشعارات مش متاحة أو مش مسموحة هنا")};native()}
+$("sNtst").onclick=function(){var ok=notify("إشعار تجريبي","لو شايف الرسالة دي في شريط الإشعارات يبقى كله تمام");toast(ok?"اتبعت إشعار، بص على شريط الإشعارات":"الإشعارات مش متاحة أو مش مسموحة هنا")};native();shInit()}
 function init(){rm=$("rm");alc=$("alc");
 $("sSnd").innerHTML=Object.keys(TONES).map(function(k){return"<option value='"+k+"'>"+TONES[k][0]+"</option>"}).join("");
 ["sDr","rm"].forEach(function(i){$(i).innerHTML=[-1,0,5,10,15,30,60].map(function(v){return"<option value='"+v+"'>"+rl(v)+"</option>"}).join("")});
@@ -290,7 +353,7 @@ document.getElementById("sv").onclick=function(){
   var ds=[];dc.querySelectorAll("input:checked").forEach(function(c){ds.push(+c.value)});
   if(!ds.length)return;
   cur.n=nm.value.trim()||"حاجة";cur.s=+st.value;cur.d=+du.value;cur.days=ds;cur.r=+rm.value;cur.al=alc.checked;cur.id=cur.id||uid();
-  if(evs.indexOf(cur)<0)evs.push(cur);
+  if(evs.indexOf(cur)<0)evs.push(cur);if(ovl(cur))toast("تنبيه: الميعاد ده متداخل مع ميعاد تاني");
   save();close();render();
 };
 var b=document.getElementById("clr"),tmr;
